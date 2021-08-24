@@ -1,0 +1,115 @@
+
+
+    <div class="modal-wrapper" id="add-user-modal">
+      <div class="modal">
+        <a href="#" onclick="closeModal()" class="modal-close">+</a>
+        <div class="modal-title">
+          <h2>Create New User</h2>
+        </div>
+        <div class="modal-body">
+          <form
+            method="POST"
+            action="/users"
+            enctype="multipart/form-data"
+            id="add-user-form">
+            
+            <input type="text" placeholder="enter name" name="name" />
+            <p class="error name-error "></p>
+            
+            <input type="text" placeholder="enter email" name="email" />
+            <p class="error email-error "></p>
+            
+            <input type="text" placeholder="enter mobile" name="mobile" />
+            <p class="error mobile-error "></p>
+            
+            <input type="password" placeholder="enter password" name="password"/>
+            <p class="error password-error "></p>
+            
+            <input type="file" name="avatar" />
+            <p class="error avatar-error "></p>
+            
+            <p class="error common-error "></p>
+
+            <input type="submit" value="Submit" />
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const modal = document.querySelector("#add-user-modal");
+      const form = document.querySelector("#add-user-form");
+
+      function closeModal() {
+        modal.style.display = "none";
+      }
+      function openModal() {
+        modal.style.display = "block";
+      }
+
+    //   form submit with ajax request
+    form.onsubmit = async function(event) {
+        event.preventDefault();
+
+        // first clear the all errors
+        const errorPlaceholders = document.querySelectorAll('p.error');
+        errorPlaceholders.forEach(errItem => {
+            errItem.style.display = "none"
+        });
+        // then clear the input fields red border
+        const inputFields = document.querySelectorAll('input.error');
+        if(inputFields.length > 0 ) {
+            inputFields.forEach(inputField => {
+                inputField.classList.remove('error');
+            });
+        };
+
+        // preparing the form data
+        const formData =  new FormData(form); // return an object not an array
+
+        // for showing success notifiction i am using toastify.js library -> use documentation
+        const successToast = Toastify({
+            text: "User added successfully and reloading the list",
+            duration: 1000
+        }
+        );
+
+        // requesting server with fetch
+        let response = await fetch('/users', { // fetch don't return json response
+            method: "POST",
+            body: formData,
+        });
+
+        // making json response
+        let result = await response.json();
+
+        // error handling and success
+        if(result.errors) {
+            // error handle
+            Object.keys(result.errors).forEach(fieldname => {
+                // make input fields red by adding error class
+                form[fieldname].classList.add('error');
+
+                // grab errorPlaceholder and make the error visible
+                const errorPlaceholder = document.querySelector(`.${fieldname}-error `);
+                errorPlaceholder.textContent = result.errors[fieldname].msg;
+            });
+
+            // make visible the error placeholders
+            errorPlaceholder.style.display = "block";
+        }
+        else {
+            // success handle using toastify
+            successToast.showToast();
+            // closing the modal
+            closeModal();
+            // remove the errors from the modal
+            document.querySelector('p.error').style.display = "none"
+            // reloading the page after 1 second
+            setTimeout(()=> {
+                location.reload();
+            }, 1000)
+        }
+    }
+
+    </script>

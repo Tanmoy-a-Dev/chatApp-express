@@ -32,7 +32,7 @@ async function addUser(req, res, next) {
     try {
         const savedUser = await newUser.save();
         res.status(200).json({
-            message: "New user added successfully";
+            message: "New user added successfully"
         })
     }
     catch (err) {
