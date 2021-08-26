@@ -12,6 +12,7 @@
       <div id="users-table">
         <table>
           <thead>
+            
             <tr>
               <th>Name</th>
               <th>Email</th>
@@ -19,16 +20,22 @@
             </tr>
           </thead>
           <tbody id="users-table">
-            <tr id="">
+            <% users.forEach(user => { %>
+            <tr id="<%= user._id %>">
               <td class="name">
-                <img src="./images/user1.png" />
-                <span>User 1</span>
+                <% if(user.avatar) { %>
+                  <img src="./uploads/avatars/<%= user.avatar %>" />
+                <% } else { %>
+                  <img src="./images/nophoto.png" />
+                <% } %>
+                <span><%= user.name %></span>
               </td>
-              <td>email@email.com</td>
+              <td><%= user.email %></td>
               <td class="manage">
-                <img src="./images/trash.png" alt="Delete" />
+                <img src="./images/trash.png" alt="Delete" onclick="deleteUser('<%= user._id%>')" />
               </td>
             </tr>
+            <% }) %>
           </tbody>
         </table>
       </div>
@@ -36,6 +43,38 @@
 
 
     <%- include('./partials/add-user-modal') %>
+
+    <script>
+
+      // make some toast using toastify
+      const deleteSuccessToast = Toastify({
+        text: "User deleted successfully",
+        duration: 3000
+      });
+
+      const deleteFailedToast = Toastify({
+        text: "Couldn't delete the user!"
+      })
+
+      // delete a user
+      async function deleteUser(userId) {
+        let response = await fetch(`/users/${userId}`, {
+          method: "DELETE",
+        });
+        // make the response a json object
+        let result = await response.json();
+
+        if( result.errors ) {
+          deleteFailedToast.showToast();
+          location.replace('/users');
+        }
+        else {
+          deleteSuccessToast.showToast();
+          location.replace('/users')
+        }
+
+      }
+    </script>
     
   </body>
 </html>

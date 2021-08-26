@@ -85,18 +85,21 @@
 
         // error handling and success
         if(result.errors) {
+            console.log(result.errors);
             // error handle
             Object.keys(result.errors).forEach(fieldname => {
                 // make input fields red by adding error class
+                
                 form[fieldname].classList.add('error');
 
                 // grab errorPlaceholder and make the error visible
                 const errorPlaceholder = document.querySelector(`.${fieldname}-error `);
                 errorPlaceholder.textContent = result.errors[fieldname].msg;
+                // make visible the error placeholders
+                errorPlaceholder.style.display = "block";
             });
 
-            // make visible the error placeholders
-            errorPlaceholder.style.display = "block";
+            
         }
         else {
             // success handle using toastify
@@ -107,7 +110,7 @@
             document.querySelector('p.error').style.display = "none"
             // reloading the page after 1 second
             setTimeout(()=> {
-                location.reload();
+                location.replace('/users');
             }, 1000)
         }
     }

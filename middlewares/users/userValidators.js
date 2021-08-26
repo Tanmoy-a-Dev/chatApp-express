@@ -4,7 +4,7 @@ const createError = require('http-errors');
 const path = require('path');
 const { unlink } = require('fs');
 // internal imports
-const User = require('../../models/People');
+const People = require('../../models/People');
 
 
 const addUserValidator = [
@@ -18,12 +18,14 @@ const addUserValidator = [
     
     // email validate
     check("email")
+        .isLength({ min: 1 })
+        .withMessage("Email is required")
         .isEmail()
         .withMessage("Email is not valid")
         .trim()
         .custom(async (value) => {
             try {
-                const user = await User.findOne({ email: value });
+                const user = await People.findOne({ email: value });
                 if (user) {
                     throw createError("Email already in use");
                 }
@@ -36,13 +38,15 @@ const addUserValidator = [
     
     // mobile number validate
     check("mobile")
+        .isLength({ min: 1 })
+        .withMessage("Mobile number is required")
         .isMobilePhone("bn-BD", {
             strictMode: true,
         })
         .withMessage("Mobile number must be a valid bangladeshi mobile number")
         .custom(async (value) => {
             try {
-                const user = await User.findOne({ mobile: value });
+                const user = await People.findOne({ mobile: value });
 
                 if (user) {
                     throw createError("Mobile number is already in use");
@@ -55,6 +59,8 @@ const addUserValidator = [
     
     // Password validate
     check("password")
+        .isLength({ min: 8 })
+        .withMessage("Password must be 8 characters long")
         .isStrongPassword()
         .withMessage(
             "Password must be 8 characters long & must contain atleast 1 Lowercase, 1 Uppercase, 1 Number and 1 Symbol"
@@ -66,22 +72,9 @@ const addUserValidator = [
 const addUserValidationHandler = (req, res, next) => {
     const errors = validationResult(req);
     const mappedErrors = errors.mapped();
-    // error(if) we will get
-    /*
-
-    --> error diagram
-    mappedErrors = {
-        name: {
-            msg: "Name is required"
-        },
-        email: {
-            msg: "Email is not valid"
-        }
-    }
-    */
     
-    // back to code
-    if (Object.keys(mappedErrors) === 0) {
+    // if no error found then go to next middleware
+    if (Object.keys(mappedErrors).length === 0) {
         next()
     }
     else {
@@ -90,11 +83,9 @@ const addUserValidationHandler = (req, res, next) => {
         if (req.files.length > 0) {
             const { filename } = req.files[0];
             unlink(
-                path.join(`${__dirname}/public/uploads/avatars/${filename}`),
+                path.join(__dirname, `/../../public/uploads/avatars/${filename}`),
                 (err) => {
-                    if (err) {
-                        console.log(err);
-                    }
+                    if (err) console.log(err);
                 }
             ); // unlink ended here
         }; // if block in else ended here
